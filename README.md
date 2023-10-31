@@ -2,7 +2,7 @@
 
 ## Dir Structure 
 
-- `/study-logs` Study logs written over the course of the course
+- `/study-logs` Study logs written during the course
 
 ## Project: Green e2e ML (working title)
 
@@ -67,3 +67,8 @@ Currently model traning is run nightly. How often is actually required? How to p
 ### Open questions:
 
 1. Where to run, is local kube cluster enough, can school provide cloud cluster?
+
+
+https://www.kaggle.com/code/prashant111/random-forest-classifier-tutorial/notebook
+
+https://archive.ics.uci.edu/dataset/19/car+evaluation

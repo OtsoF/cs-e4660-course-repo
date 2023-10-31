@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: preprocessing
+spec:
+  template:
+    metadata:
+      name: preprocessing
+    spec:
+      containers:
+        - name: preprocessing
+          image: preprocessing:latest
+          imagePullPolicy: Never
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: my-database-cluster-app
+                  key: username
+                  optional: false
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: my-database-cluster-app
+                  key: password
+                  optional: false
+            - name: DB_HOST
+              value: my-database-cluster-rw
+            - name: DB_NAME
+              value: app
+      restartPolicy: Never
+  backoffLimit: 1
