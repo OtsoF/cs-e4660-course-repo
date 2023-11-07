@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-api
+  labels:
+    app: model-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: model-api
+  template:
+    metadata:
+      labels:
+        app: model-api
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: model-api
+          image: model-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          env:
+            - name: API_HOST
+              value: "0.0.0.0"
+            - name: API_PORT
+              value: "5000"
+            - name: MODEL_PATH
+              value: "/app/data"
+          volumeMounts:
+            - name: shared-data
+              mountPath: /app/data
+      volumes:
+        - name: shared-data
+          hostPath:
+            path: /data
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: model-api
+spec:
+  ports:
+  - port: 5000
+    targetPort: 5000
+    nodePort: 30004
+  selector:
+    app: model-api
+  type: NodePort

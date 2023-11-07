@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: model-training
+spec:
+  template:
+    metadata:
+      name: model-training
+    spec:
+      containers:
+        - name: model-training
+          image: model-training:latest
+          imagePullPolicy: Never
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: my-database-cluster-app
+                  key: username
+                  optional: false
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: my-database-cluster-app
+                  key: password
+                  optional: false
+            - name: DB_HOST
+              value: my-database-cluster-rw
+            - name: DB_NAME
+              value: app
+            - name: MODEL_FILE_PATH
+              value: /app/data
+          volumeMounts:
+            - name: shared-data
+              mountPath: /app/data
+      restartPolicy: Never
+      volumes:
+        - name: shared-data
+          hostPath:
+            path: /data
+            type: DirectoryOrCreate
+  backoffLimit: 1

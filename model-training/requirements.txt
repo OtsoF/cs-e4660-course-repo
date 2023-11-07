@@ -1,4 +1,6 @@
 numpy
 pandas
-seaborn
-sckit-learn
+scikit-learn
+psycopg2
+joblib
+sqlalchemy
