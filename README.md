@@ -1,10 +1,20 @@
 # cs-e4660 Course repo
 
-## Dir Structure 
+## Dir Structure
 
-- `/study-logs` Study logs written during the course
+Most of the project and course tasks are contained in folders, which contain their own documentation:
 
-## Project: Green e2e ML (working title)
+- `./data` The dataset used in the project
+- `./data-fetch` Project mock data fetcher
+- `./database` Config for database used in project
+- `./model-api` Project model api serving predictions
+- `./model-training` Project model training
+- `./preprosessing` Project mock preprosessing
+- `./projet-plan` The inital project plan 
+- `./study-logs` Study logs written during the course
+
+## Project: Green e2e ML
+Seen inital project plan in [project-plan](./project-plan/) folder
 
 ### Background
 
@@ -19,55 +29,89 @@
 - Similar pipelines expected in the future to help predict finacial management & accounting related
 - ML pipelines run on a (shared) Kubernetes cluster (AKS)
 
-![(image missing)](./finago-pipeline.drawio.png)
 
-### Task 1: Create proper ochrestration and e2e workflow using workflow engine
+![(image missing)](./project-plan/finago-pipeline.drawio.png)
 
-- Compare Apache airflow, Kubeflow and Argo Workflows, see which one is best suited for this system
-- Create mock pipeline (can't use real data or real ML solution) which closely simulates the real system
-  - containerized jobs on kubernetes for preprosessing, training and model api
-  - mock dbs (whatever easiest, maybe also on kubernetes)
-- Create orchestration and e2e pipeline with selected technology
+### Challenges to be solved
+
+This project attemps to solve two main challenges:
+
+1. Best solution for DevOps engineers to create and maintain ML pipelines on a shared (Azure) Kubernets cluster
+2. How to make the pipelines green (and by proxy cheap and efficient)
+
+### Solution 1: Proper ochrestration and e2e workflow using workflow engine
+
+#### Pipeline Ochestration tools Comparison
+
+Here is a comparisons table based on the different requirements of the system described above.
+
+|                                                | Argo Workflows | Kubeflow | Apache airflow |
+|------------------------------------------------|----------------|----------|----------------|
+| Kubernetes support                             |       yes      |     yes  | technically yes, could not get working |
+| CasC                                           |       yaml (kubernetes)         |    pipeline sdk (python)/proprietary dsl      |      python sdk (not tested)          |
+| Learning curve for DevOps <br> (personal estimate) |    medium(*)   |    high(**)      |       n/a     |
+| Schduling                                      |        yes     |          |                |
+| Event triggering                               |        yes     |          |                |
+| Logging                                        |      kuberntes logs (native kubernetes jobs)       |          |                |
+| Alerting                                       |      integrations to slack and opsgenie          |          |                |
+| Good UI (usable by ML engineers)               |                |          |                |
+
+
+(*) kubernetes like yaml syntax to configure worflows 
+
+(**) Uses argo workflow under the hood, but confiured in python. This might be the best solution for ML engingeers, but since in this case the pipeline needs to be maintained by DevOps engineers it's not ideal
+
+
+#### Mock pipeline parts
+
+Based on the comparison Argo Workflows as chosen as the pipeline orchestration tool / workflow engine. This means the different pipline steps are contanerized, more info on these in their own folders (in order):
+
+- `./data-fetch` Project mock data fetcher-
+- `./preprosessing` Project mock preprosessing
+- `./model-training` Project model training
+- `./model-api` Project model api serving predictions
+
+#### Argo workflows and the pipeline
+
+The Argo workflow configuration and pipeline configuration will be #FIXME(are) in the `./pipeline` folder
+
+
+#TODO:
 - See how the pipeline solution supports and enables R3E + Monitoring, Observability & Experimenting
   - what restrictions come from existing ML pipeline, what restrictions (potentially) come from workflow pipeline solution being implemented
   - what areas of R3E + Monitoring, Observability & Experimenting can't be solved by orchestration & workflow engine (just figure out, supporting these out of scope)
 
-### Task 2: How to make the e2e pipeline green
+### Solution 2: Making the pipeline green
 
-- What is green?
-- Lowest possible CO2 emissions, lowest waste, lowest resource consumption
-- What is in our control?
-- Second motivation: green == cheap (largely)
+#### Pipeline scheduling
 
-![(image missing)](./impact.png)
-*Green in software engineering: tools, methods and practices for reducing the
-environmental impacts of software use – a literature review (Mehtälä 2023)*
+Scheduling can help make the pipeline green in two ways: 
+- scheduling frequency
+  - the real pipeline is currently run nigthly, but by assesing model perfomance on incoming training data (or potentially by getting feedback on predictions) we can make determinations on when to re-train the model(s)
+- scheduling timing
+  - the *carbon intensity* of the electric grid changes based on certain factors (see [Planning document](./project-plan/plan.md) for more details)
+  - the mock pipeline is run in a local kuberntes cluster, but we can pretend it's running in a specific Azure datacenter and use APIs to see when the datacenter has low carbon intensity
 
-#### 1. Batch job scheduling
+This table shows the plan to combine both scheduling factors into one solution:
 
-"Carbon aware software". Run batch jobs when *Carbon intensity(\*)* is low. APIs exist (https://github.com/Green-Software-Foundation/carbon-aware-sdk) to check grid status. -> Run batch jobs when carbon intensity is at it's lowest. 
+| Accuracy of model on new training data | Action  |
+|----------------------------------------|---------|
+| Small decrease compared to inital training accuracy (to be quantified) | Retrain model once carbon intensity drops below set threshold |
+| Big decrease ...                                                       | Retrain model immediately |
 
-*(\*)Carbon intensity: How much electricity in the electric grid comes from fossil fuels. The ratio between different sources of electricity in the electric grid changes based on eg. wind & time of day/time of week.*
+#### Metrics collection
 
-#### 2. Model traning frequency
+#Fixme placehoder just copied from planning doc:
 
-Currently model traning is run nightly. How often is actually required? How to predict when (lower bound) to run the training with out losing accuracy. 
-
-#### 3. Track SCI metric of whole pipeline & parts
-
-![(image missing)](sci.png)
+![(image missing)](./project-plan/sci.png)
 *Green software foundation*
 
 - See which parts of the pipeline contribute most to co2 emissions
 - See trends over time, sudden increases etc.
 - SCI: https://learn.greensoftware.foundation/measurement/#the-sci-equation
 
-#### 4. (Other methods to be discovered)
 
-### Open questions:
-
-1. Where to run, is local kube cluster enough, can school provide cloud cluster?
-
+## links (sort out)
 
 https://www.kaggle.com/code/prashant111/random-forest-classifier-tutorial/notebook
 
