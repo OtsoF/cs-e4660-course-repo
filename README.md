@@ -111,7 +111,11 @@ This table shows the plan to combine both scheduling factors into one solution:
 - SCI: https://learn.greensoftware.foundation/measurement/#the-sci-equation
 
 
-## links (sort out)
+## (sort out)
+
+- scaling
+- what can be scaled
+- customers vs 
 
 https://www.kaggle.com/code/prashant111/random-forest-classifier-tutorial/notebook
 
