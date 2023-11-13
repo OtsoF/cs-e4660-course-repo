@@ -10,7 +10,7 @@ API_HOST="localhost" API_PORT="5000" MODEL_PATH="../model-training/data/" python
 
 # test api (acc)
 curl -X POST -H "Content-Type: application/json" \
--d '{"row": [ "high" ,"med", "5more", 4, "big" ,"med" ]}' \
+-d '{"row": [ 0, 1, 2, 0, 0, 0, 8, 7, 1, 0, 11 ]}' \
 http://localhost:5000/predict
 
 # test api (unacc)
@@ -38,6 +38,6 @@ http://localhost:5000/predict
 
 # test api (unacc)
 curl -X POST -H "Content-Type: application/json" \
--d '{"row": [ "vhigh","vhigh", 2, 2, "small", "low" ]}' \
+-d '{"row": [ 0, 1, 2, 0, 0, 0, 8, 7, 1, 0, 11 ]}' \
 http://localhost:30004/predict
 ```

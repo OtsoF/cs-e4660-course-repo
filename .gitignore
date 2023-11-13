@@ -1,1 +1,4 @@
 .venv
+testing
+data-fetch/AutoInsuranceClaim.csv
+model-training/data/

@@ -28,5 +28,9 @@ spec:
               value: my-database-cluster-rw
             - name: DB_NAME
               value: app
+            - name: CSV_PATH
+              value: /app/AutoInsuranceClaim.csv
+            - name: N_ROWS
+              value: "100"
       restartPolicy: Never
   backoffLimit: 1

@@ -14,9 +14,11 @@ def main():
   user = os.environ.get('DB_USER')
   password = os.environ.get('DB_PASS')
   model_file_path = os.environ.get('MODEL_FILE_PATH')
-  table = 'car_data_preprocessed'
-  get_data_query = f"SELECT buying, maint, doors, persons, lug_boot, car_safety, class FROM {table};"
-  col_names = ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'car_safety', 'class']
+  table = 'insurance_prep'
+  col_names = ['target', 'ps_ind_01', 'ps_ind_02_cat', 'ps_ind_03',
+       'ps_ind_04_cat', 'ps_ind_05_cat', 'ps_ind_14', 'ps_ind_15',
+       'ps_car_01_cat', 'ps_car_02_cat','ps_car_03_cat', 'ps_car_06_cat']
+  get_data_query = f"SELECT {','.join(col_names)} FROM {table};"
 
   print("Getting data from database...")
   ae = create_engine(f'postgresql+psycopg2://{user}:{password}@{host}/{database}')
@@ -24,10 +26,8 @@ def main():
   df = pd.read_sql(get_data_query, ae_conn)
   ae_conn.close()
 
-  df.columns = col_names
-
-  X = df.drop(['class'], axis=1)
-  y = df['class']
+  X = df.drop(['target'], axis=1)
+  y = df['target']
 
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.33, random_state = 42)
 

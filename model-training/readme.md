@@ -8,7 +8,7 @@ Here, a randomforest classifier is trainer with default hyperparameters. The res
 kubectl port-forward my-database-cluster-1 5432:5432
 
 DB_HOST="127.0.0.1" DB_NAME="app" DB_USER="app" \
-DB_PASS="D75VgwL1vAzrvelvT7MCUJsQvdZPfrTDbs0CyQ9TCr1x6lPHtTZAd12SJzUsxsoD" \
+DB_PASS="$(kubectl get secrets/my-database-cluster-app --template={{.data.password}} | base64 -D)" \
 MODEL_FILE_PATH="data" \
 python training.py
 ```
