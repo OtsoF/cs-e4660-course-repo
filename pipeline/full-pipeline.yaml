@@ -1,0 +1,161 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: full-pipeline-
+  labels:
+    workflows.argoproj.io/archive-strategy: "false"
+  annotations:
+    workflows.argoproj.io/description: |
+      This workflow runs the whole e2e pipeline.
+spec:
+  entrypoint: full-pipeline
+  volumes:
+  - name: shared-data
+    hostPath:
+      path: /data
+      type: DirectoryOrCreate
+
+  templates:
+    - name: full-pipeline
+      steps:
+        # - - name: data-fetch
+        #     template: data-fetch
+        #     arguments:
+        #       parameters:
+        #         - name: n_rows
+        #           value: "100"
+        # - - name: preprocessing
+        #     template: preprocessing
+        # - - name: model-training
+        #     template: model-training
+        - - name: deploy-model-api
+            template: deploy-model-api
+
+    - name: data-fetch
+      inputs:
+        parameters:
+          - name: n_rows
+      container:
+        image: data-fetch:latest
+        imagePullPolicy: Never
+        command: [python]
+        args: ["fetch.py"]
+        env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: my-database-cluster-app
+                key: username
+                optional: false
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: my-database-cluster-app
+                key: password
+                optional: false
+          - name: DB_HOST
+            value: my-database-cluster-rw
+          - name: DB_NAME
+            value: app
+          - name: CSV_PATH
+            value: /app/AutoInsuranceClaim.csv
+          - name: N_ROWS
+            value: "{{inputs.parameters.n_rows}}"
+
+    - name: preprocessing
+      container:
+        image: preprocessing:latest
+        command: [python]
+        args: ["preprocessing.py"]
+        imagePullPolicy: Never
+        env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: my-database-cluster-app
+                key: username
+                optional: false
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: my-database-cluster-app
+                key: password
+                optional: false
+          - name: DB_HOST
+            value: my-database-cluster-rw
+          - name: DB_NAME
+            value: app
+    
+    - name: model-training
+      container:
+        name: model-training
+        image: model-training:latest
+        command: [python]
+        args: ["training.py"]
+        imagePullPolicy: Never
+        env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: my-database-cluster-app
+                key: username
+                optional: false
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: my-database-cluster-app
+                key: password
+                optional: false
+          - name: DB_HOST
+            value: my-database-cluster-rw
+          - name: DB_NAME
+            value: app
+          - name: MODEL_FILE_PATH
+            value: /app/data
+        volumeMounts:
+          - name: shared-data
+            mountPath: /app/data
+
+    - name: deploy-model-api
+      resource:
+        action: apply
+        successCondition: status.conditions.#(type=="Ready")#status=="True"
+        manifest: |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: model-api
+            labels:
+              app: model-api
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: model-api
+            template:
+              metadata:
+                labels:
+                  app: model-api
+              spec:
+                restartPolicy: Always
+                containers:
+                  - name: model-api
+                    image: model-api:latest
+                    imagePullPolicy: Never
+                    ports:
+                      - containerPort: 5000
+                    env:
+                      - name: API_HOST
+                        value: "0.0.0.0"
+                      - name: API_PORT
+                        value: "5000"
+                      - name: MODEL_PATH
+                        value: "/app/data"
+                    volumeMounts:
+                      - name: shared-data
+                        mountPath: /app/data
+                volumes:
+                  - name: shared-data
+                    hostPath:
+                      path: /data
+                      type: DirectoryOrCreate

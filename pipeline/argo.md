@@ -4,7 +4,7 @@
 
 ```bash
 # namespace 
-kubectl create namespace argo´
+kubectl create namespace argo
 
 # installation
 kubectl apply -n argo -f https://github.com/argoproj/argo-workflows/releases/download/v3.4.13/install.yaml
@@ -22,6 +22,15 @@ kubectl patch deployment \
 
 # port forward ui
 kubectl -n argo port-forward deployment/argo-server 2746:2746
+
+# create admin clusterrolebinding. This is bad in real instance but good in the testbed, since we don't need to configure RBAC
+kubectl create clusterrolebinding serviceaccounts-cluster-admin \
+  --clusterrole=cluster-admin \
+  --group=system:serviceaccounts
+clusterrolebinding.rbac.authorization.k8s.io/serviceaccounts-cluster-admin created
+otsofriman@MACDEVICE-SP65X pipeline % kubectl create clusterrolebinding serviceaccounts-cluster-admin \
+  --clusterrole=cluster-admin \
+  --group=system:serviceaccounts
 
 
 # uninstall (not tested)

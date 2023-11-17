@@ -9,12 +9,12 @@ Most of the project and course tasks are contained in folders, which contain the
 - `./database` Config for database used in project
 - `./model-api` Project model api serving predictions
 - `./model-training` Project model training
-- `./preprosessing` Project mock preprosessing
-- `./projet-plan` The inital project plan 
+- `./preprocessing` Project mock preprocessing
+- `./project-plan` The inital project plan 
 - `./study-logs` Study logs written during the course
 
 ## Project: Green e2e ML
-Seen inital project plan in [project-plan](./project-plan/) folder
+Seen initial project plan in [project-plan](./project-plan/) folder
 
 ### Background
 
@@ -26,17 +26,21 @@ Seen inital project plan in [project-plan](./project-plan/) folder
 
 - Financial management SaaS product
 - Invoice field predictions (VAT %, amount, receiver, etc...) using Randomforest classifier
-- Similar pipelines expected in the future to help predict finacial management & accounting related
+- Similar pipelines expected in the future to help predict financial management & accounting related
 - ML pipelines run on a (shared) Kubernetes cluster (AKS)
 
 
 ![(image missing)](./project-plan/finago-pipeline.drawio.png)
 
+### The mock env and story
+
+The 
+
 ### Challenges to be solved
 
-This project attemps to solve two main challenges:
+This project attempts to solve two main challenges:
 
-1. Best solution for DevOps engineers to create and maintain ML pipelines on a shared (Azure) Kubernets cluster
+1. Best solution for DevOps engineers to create and maintain ML pipelines on a shared (Azure) Kubernetes cluster
 2. How to make the pipelines green (and by proxy cheap and efficient)
 
 ### Solution 1: Proper ochrestration and e2e workflow using workflow engine

@@ -1,4 +1,7 @@
 .venv
+.vscode
 testing
 data-fetch/AutoInsuranceClaim.csv
 model-training/data/
+
+model-api/config.yaml
