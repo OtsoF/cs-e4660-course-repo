@@ -1,12 +1,12 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: full-pipeline-
+  generateName: data-fetch-pipeline-
   labels:
     workflows.argoproj.io/archive-strategy: "false"
   annotations:
     workflows.argoproj.io/description: |
-      This workflow runs the whole e2e pipeline.
+      This workflow fetches data into the database.
 spec:
   entrypoint: full-pipeline
   volumes:
@@ -24,10 +24,6 @@ spec:
               parameters:
                 - name: n_rows
                   value: "100"
-        - - name: preprocessing
-            template: preprocessing
-        - - name: model-training
-            template: model-training
 
     - name: data-fetch
       inputs:

@@ -1,5 +1,9 @@
 # Argo Workflows
 
+## Pipelines
+
+There are two pipelines, 
+
 ## Installation
 
 ```bash
@@ -27,12 +31,12 @@ kubectl -n argo port-forward deployment/argo-server 2746:2746
 kubectl create clusterrolebinding serviceaccounts-cluster-admin \
   --clusterrole=cluster-admin \
   --group=system:serviceaccounts
-clusterrolebinding.rbac.authorization.k8s.io/serviceaccounts-cluster-admin created
-otsofriman@MACDEVICE-SP65X pipeline % kubectl create clusterrolebinding serviceaccounts-cluster-admin \
-  --clusterrole=cluster-admin \
-  --group=system:serviceaccounts
 
 
 # uninstall (not tested)
 kubectl delete -n argo -f https://github.com/argoproj/argo-workflows/releases/download/v3.4.13/install.yaml
 ```
+
+## Making pipelines available to the cluster
+
+The pipelines could have been made into Argo WorkflowTemplates. Testing these out, they were weirdly complex and had different syntax from pipelines. Because of this, I found them annoying to use and decided to create a Kubernetes ConfigMap containing the pipelines. This ConfigMap can them be consumed by the scheduler to schedule the pipelines. The ConfigMap can easily be updated with `kubectl apply -k ./` (this applies the `kustomization.yaml`, which defines the ConfigMap containing the pipeline definition files in this dir)

@@ -28,8 +28,10 @@ spec:
         #     template: preprocessing
         # - - name: model-training
         #     template: model-training
-        - - name: deploy-model-api
-            template: deploy-model-api
+          - - name: deploy-model-api
+              template: deploy-model-api
+            - name: deploy-model-api-service
+              template: deploy-model-api-service
 
     - name: data-fetch
       inputs:
@@ -119,7 +121,8 @@ spec:
     - name: deploy-model-api
       resource:
         action: apply
-        successCondition: status.conditions.#(type=="Ready")#status=="True"
+        successCondition: status.availableReplicas > 0
+        failureCondition: status.unavailableReplicas > 0, status.conditions > 1
         manifest: |
           apiVersion: apps/v1
           kind: Deployment
@@ -159,3 +162,21 @@ spec:
                     hostPath:
                       path: /data
                       type: DirectoryOrCreate
+    - name: deploy-model-api-service
+      resource:
+        action: apply
+        manifest: |
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: model-api
+            labels:
+              app: model-api
+          spec:
+            type: NodePort
+            ports:
+              - port: 5000
+                targetPort: 5000
+                nodePort: 30004
+            selector:
+              app: model-api
