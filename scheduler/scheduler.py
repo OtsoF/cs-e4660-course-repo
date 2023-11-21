@@ -5,6 +5,7 @@ from urllib3.exceptions import InsecureRequestWarning
 filterwarnings("ignore", category=InsecureRequestWarning)
 
 def trigger_pipeline(host, token, pipeline_dict):
+  print("Triggering pipeline")
   endpoint = 'https://' + host + ':2746/api/v1/workflows/default'
 
   payload = {}
@@ -30,11 +31,15 @@ def trigger_pipeline(host, token, pipeline_dict):
 def main():
   host = os.environ.get('HOST', 'localhost')
   token = os.environ.get('BEARER_TOKEN')
+  pipeline_path = os.environ.get('PIPELINE_PATH')
+  print(f"Using pipeline {pipeline_path}")
 
-  with open('../pipeline/full-pipeline.yaml', 'r') as file:
+  with open(pipeline_path, 'r') as file:
     full_pipeline = yaml.safe_load(file)
 
+  #FIXME add logic for when to trigger the pipeline
   trigger_pipeline(host, token, full_pipeline)
+  print("Done")
 
 if __name__ == '__main__':
   main()

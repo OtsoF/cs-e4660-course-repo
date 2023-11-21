@@ -9,6 +9,7 @@ def main():
   password = os.environ.get('DB_PASS')
   csv_path = os.environ.get('CSV_PATH')
   n_rows = os.environ.get('N_ROWS')
+  start_row = os.environ.get('START_ROW')
   table = 'insurance'
   
   print(f'Importing data into {database}.{table} on {host}...')
@@ -18,7 +19,7 @@ def main():
   if n_rows == None:
     df = pd.read_csv(csv_path)
   else: 
-    df = pd.read_csv(csv_path, nrows=int(n_rows))
+    df = pd.read_csv(csv_path, nrows=int(n_rows), skiprows=int(start_row))
 
   df.to_sql(table, ae_conn, if_exists='replace', index=False)
   ae_conn.close()

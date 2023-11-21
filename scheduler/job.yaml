@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: scheduler
+spec:
+  template:
+    metadata:
+      name: scheduler
+    spec:
+      containers:
+        - name: scheduler
+          image: scheduler:latest
+          imagePullPolicy: Never
+          env:
+            - name: BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: default.service-account-token
+                  key: token
+                  optional: false
+            - name: HOST
+              value: argo-server.argo
+            - name: PIPELINE_PATH
+              value: /app/pipelines/train-and-deploy-pipeline.yaml
+          volumeMounts:
+            - name: shared-data
+              mountPath: /app/data
+            - name: pipelines
+              mountPath: /app/pipelines
+      restartPolicy: Never
+      volumes:
+        - name: shared-data
+          hostPath:
+            path: /data
+            type: DirectoryOrCreate
+        - name: pipelines
+          configMap:
+            name: pipelines-conf-5f946gmt24
+  backoffLimit: 1

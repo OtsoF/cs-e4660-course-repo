@@ -9,7 +9,7 @@ kubectl port-forward my-database-cluster-1 5432:5432
 
 DB_HOST="127.0.0.1" DB_NAME="app" DB_USER="app" \
 DB_PASS="$(kubectl get secrets/my-database-cluster-app --template={{.data.password}} | base64 -D)" \
-MODEL_FILE_PATH="data" CSV_PATH="./AutoInsuranceClaim.csv" N_ROWS="10" \
+MODEL_FILE_PATH="data" CSV_PATH="./AutoInsuranceClaim.csv" N_ROWS="10" START_ROW="0" \
 python fetch.py
 ```
 

@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: scheduler-cron
+spec:
+  schedule: "*/5 * * * *" # every 5 minutes
+  concurrencyPolicy: "Forbid"
+  startingDeadlineSeconds: 0
+
+  workFlowSpec:
+    entrypoint: full-pipeline
+    volumes:
+    - name: shared-data
+      hostPath:
+        path: /data
+        type: DirectoryOrCreate
+
+    - name: pipelines
+      configMap:
+        name: pipelines-conf-k4f6742c2k
+    
+    templates:
+      - name: full-pipeline
+        steps:
+          - - name: scheduler
+              template: scheduler
+
+      - name: scheduler
+        container:
+          image: scheduler:latest
+          command: [python]
+          args: ["scheduler.py"]
+          imagePullPolicy: Never
+          env:
+            - name: BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: default.service-account-token
+                  key: token
+                  optional: false
+            - name: HOST
+              value: argo-server.argo
+            - name: PIPELINE_PATH
+              value: /app/pipelines/train-and-deploy-pipeline.yaml
+          volumeMounts:
+            - name: shared-data
+              mountPath: /app/data
+            - name: pipelines
+              mountPath: /app/pipelines   

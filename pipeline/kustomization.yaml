@@ -4,4 +4,5 @@ configMapGenerator:
 - files:
   - data-fetch-pipeline.yaml
   - full-pipeline.yaml
+  - train-and-deploy-pipeline.yaml
   name: pipelines-conf

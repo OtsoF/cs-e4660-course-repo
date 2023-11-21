@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: model-training
+  name: test-pod
 spec:
   containers:
     - name: model-training

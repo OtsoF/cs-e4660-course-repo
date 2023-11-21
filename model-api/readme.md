@@ -1,6 +1,6 @@
 # Model training
 
-The model api simply gets the latest model from the mock blob storage (node filesystem volume) and predicts reuqests on the `/predict` endpoint
+The model api simply gets the latest model from the mock blob storage (node filesystem volume) and predicts requests on the `/predict` endpoint
 
 ## Local testing
 
