@@ -42,9 +42,17 @@ This project attempts to solve two main challenges:
 
 ### Emulating the real environment (story)
 
-The real environment runs on an AKS cluster in the west europe datacenter. The aks cluster has an autoscaling nodepool. This means that the cluster is able to scale based on resources usage. 
+- The real environment runs on an AKS cluster in the west europe datacenter. 
+- The aks cluster has an autoscaling nodepool. 
+- This means that the cluster is able to scale based on resources usage. 
+- In reality the data ingestion should be scheduled (currently nightly)
+  - schedule data ingestion based on model accuracy wrt. amount of data
 
-The testbed is a local aks cluster on my machine. Still, we pretend it's a scalable custer running in west europe (Germany). These factors are relevant when thinking about scheduling and scaling of the solution, as well determining the carbon intensity of the electric grid.
+- The testbed is a local aks cluster on my machine. 
+- we pretend it's a scalable custer running in west europe (Germany). 
+- data ingestion manually
+
+These factors are relevant when thinking about scheduling and scaling of the solution, as well determining the carbon intensity of the electric grid.
 
 
 ### Solution 1: Proper orchestration and e2e workflow using workflow engine
@@ -129,3 +137,7 @@ This table shows the plan to combine both scheduling factors into one solution:
 - scaling
 - what can be scaled
 - customers vs 
+SELECT *
+  FROM information_schema.columns
+ WHERE table_schema = 'app'
+   AND table_name   = 'insurance';
