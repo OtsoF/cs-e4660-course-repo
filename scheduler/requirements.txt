@@ -1,2 +1,7 @@
 requests
 pyyaml
+psycopg2
+pandas
+sqlalchemy
+joblib
+scikit-learn
