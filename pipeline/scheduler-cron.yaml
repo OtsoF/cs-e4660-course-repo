@@ -14,10 +14,9 @@ spec:
       hostPath:
         path: /data
         type: DirectoryOrCreate
-
     - name: pipelines
       configMap:
-        name: pipelines-conf-k4f6742c2k
+        name: pipelines-conf-47b2m7kc6t
     
     templates:
       - name: full-pipeline
@@ -42,8 +41,38 @@ spec:
               value: argo-server.argo
             - name: PIPELINE_PATH
               value: /app/pipelines/train-and-deploy-pipeline.yaml
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: my-database-cluster-app
+                  key: username
+                  optional: false
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: my-database-cluster-app
+                  key: password
+                  optional: false
+            - name: ELECTRICITY_MAPS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: electricity-maps-token
+                  key: token
+                  optional: false
+            - name: DB_HOST
+              value: my-database-cluster-rw
+            - name: DB_NAME
+              value: app
+            - name: MODEL_FILE_PATH
+              value: /app/data
+            - name: MAX_ACCURACY_DECREASE
+              value: "0.05"
+            - name: LOW_ACCURACY_DECREASE
+              value: "0.0"
+            - name: CARBON_INTENSITY_THRESHOLD
+              value: "600"
           volumeMounts:
             - name: shared-data
               mountPath: /app/data
             - name: pipelines
-              mountPath: /app/pipelines   
+              mountPath: /app/pipelines

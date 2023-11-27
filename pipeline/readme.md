@@ -7,7 +7,7 @@ There are three Workflows, one for the full pipeline, one for just fetching and 
 ## Running pipelines
 
 ```bash
-argo submit data-fetch-pipeline.yaml -p n_rows="10000"
+argo submit data-fetch-pipeline.yaml -p n_rows="10000" -p start_row="100"
 argo submit train-and-deploy-pipeline.yaml
 argo submit full-pipeline.yaml
 argo cron create scheduler-cron.yaml
@@ -15,7 +15,7 @@ argo cron create scheduler-cron.yaml
 
 ## Making pipelines available to the cluster
 
-The pipelines could have been made into Argo WorkflowTemplates. Testing these out, they were weirdly complex and had different syntax from pipelines. Because of this, I found them annoying to use and decided to create a Kubernetes ConfigMap containing the pipelines. This ConfigMap can them be consumed by the scheduler to schedule the pipelines. The ConfigMap can easily be updated with `kubectl apply -k ./` (this applies the `kustomization.yaml`, which defines the ConfigMap containing the pipeline definition files in this dir)
+The pipelines could have been made into Argo WorkflowTemplates. Testing these out, they were weirdly complex and had different syntax from pipelines. Because of this, I found them annoying to use and decided to create a Kubernetes ConfigMap containing the pipelines. This ConfigMap can then be used by the scheduler to schedule the pipelines. The ConfigMap can easily be updated with `kubectl apply -k ./` (this applies the `kustomization.yaml`, which defines the ConfigMap containing the pipeline definition files in this dir)
 
 ## Installation and Configuration of Argo Workflows
 
