@@ -2,9 +2,22 @@
 
 ## Pipelines
 
-There are two pipelines, 
+There are three Workflows, one for the full pipeline, one for just fetching and preprocessing, and one for model training and deploying the model-api. Additionally, there is a CronWorkflow for the scheduler.
 
-## Installation
+## Running pipelines
+
+```bash
+argo submit data-fetch-pipeline.yaml -p n_rows="10000"
+argo submit train-and-deploy-pipeline.yaml
+argo submit full-pipeline.yaml
+argo cron create scheduler-cron.yaml
+```
+
+## Making pipelines available to the cluster
+
+The pipelines could have been made into Argo WorkflowTemplates. Testing these out, they were weirdly complex and had different syntax from pipelines. Because of this, I found them annoying to use and decided to create a Kubernetes ConfigMap containing the pipelines. This ConfigMap can them be consumed by the scheduler to schedule the pipelines. The ConfigMap can easily be updated with `kubectl apply -k ./` (this applies the `kustomization.yaml`, which defines the ConfigMap containing the pipeline definition files in this dir)
+
+## Installation and Configuration of Argo Workflows
 
 ```bash
 # namespace 
@@ -27,7 +40,7 @@ kubectl patch deployment \
 # port forward ui
 kubectl -n argo port-forward deployment/argo-server 2746:2746
 
-# create admin clusterrolebinding. This is bad in real instance but good in the testbed, since we don't need to configure RBAC
+# create admin clusterrolebinding. This is bad in a real instance but good in the testbed, since we don't need to configure RBAC
 kubectl create clusterrolebinding serviceaccounts-cluster-admin \
   --clusterrole=cluster-admin \
   --group=system:serviceaccounts
@@ -37,6 +50,3 @@ kubectl create clusterrolebinding serviceaccounts-cluster-admin \
 kubectl delete -n argo -f https://github.com/argoproj/argo-workflows/releases/download/v3.4.13/install.yaml
 ```
 
-## Making pipelines available to the cluster
-
-The pipelines could have been made into Argo WorkflowTemplates. Testing these out, they were weirdly complex and had different syntax from pipelines. Because of this, I found them annoying to use and decided to create a Kubernetes ConfigMap containing the pipelines. This ConfigMap can them be consumed by the scheduler to schedule the pipelines. The ConfigMap can easily be updated with `kubectl apply -k ./` (this applies the `kustomization.yaml`, which defines the ConfigMap containing the pipeline definition files in this dir)

@@ -41,13 +41,13 @@ This project attempts to solve two main challenges:
 2. How to make the pipelines green (and by proxy cheap and efficient)
 
 ### Emulating the real environment (story)
-
+#### Real:
 - The real environment runs on an AKS cluster in the west europe datacenter. 
 - The aks cluster has an autoscaling nodepool. 
 - This means that the cluster is able to scale based on resources usage. 
 - In reality the data ingestion should be scheduled (currently nightly)
-  - schedule data ingestion based on model accuracy wrt. amount of data
-
+  - Improvement: schedule data ingestion based on model accuracy wrt. data & incoming data frequency
+#### Emulation:
 - The testbed is a local aks cluster on my machine. 
 - we pretend it's a scalable custer running in west europe (Germany). 
 - data ingestion manually
@@ -137,7 +137,3 @@ This table shows the plan to combine both scheduling factors into one solution:
 - scaling
 - what can be scaled
 - customers vs 
-SELECT *
-  FROM information_schema.columns
- WHERE table_schema = 'app'
-   AND table_name   = 'insurance';

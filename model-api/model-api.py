@@ -24,13 +24,21 @@ def predict():
     return jsonify({'error': 'Invalid JSON data: "row" key missing'}), 400
   row = request_data['row']
   df = pd.DataFrame([row])
-  col_names = ['ps_ind_01', 'ps_ind_02_cat', 'ps_ind_03',
-      'ps_ind_04_cat', 'ps_ind_05_cat', 'ps_ind_14', 'ps_ind_15',
-      'ps_car_01_cat', 'ps_car_02_cat','ps_car_03_cat', 'ps_car_06_cat']
+  col_names = ['ps_ind_01', 'ps_ind_03', 'ps_ind_15',
+      'ps_car_01_cat', 'ps_car_06_cat']
   df.columns = col_names
   prediction = MODEL.predict(df)
   print(f"Prediction : {prediction[0]}")
   return jsonify({'prediction': str(prediction[0])}), 200
+
+@app.route('/update', methods=['POST'])
+def update():
+  print("Updating model...")
+  global MODEL
+  model_file = get_newest_model(os.environ.get("MODEL_PATH"))
+  MODEL = joblib.load(model_file)
+  print("Model updated")
+  return jsonify({'message': 'Model updated'}), 200
 
 
 def main():

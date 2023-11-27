@@ -20,10 +20,13 @@ spec:
       steps:
         - - name: model-training
             template: model-training
-        - - name: deploy-model-api
-            template: deploy-model-api
-          - name: deploy-model-api-service
+        - - name: deploy-model-api-service
             template: deploy-model-api-service
+          - name: deploy-model-api
+            template: deploy-model-api
+        - - name: update-model-api
+            template: update-model-api
+            #when: "{{steps.deploy-model-api.exitCode}} != 0"
 
     - name: model-training
       container:
@@ -117,3 +120,17 @@ spec:
                 nodePort: 30004
             selector:
               app: model-api
+    
+    - name: update-model-api
+      resource:
+        action: patch
+        manifest: |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: model-api
+          spec:
+            template:
+              metadata:
+                annotations:
+                  deploy-timestamp: "{{workflow.creationTimestamp}}"

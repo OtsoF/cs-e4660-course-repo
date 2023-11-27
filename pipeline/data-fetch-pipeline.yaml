@@ -4,11 +4,19 @@ metadata:
   generateName: data-fetch-pipeline-
   labels:
     workflows.argoproj.io/archive-strategy: "false"
+    workflow: data-fetch-pipeline
   annotations:
     workflows.argoproj.io/description: |
       This workflow fetches data into the database.
 spec:
   entrypoint: full-pipeline
+  arguments:
+    parameters:
+      - name: n_rows
+        value: "100"
+      - name: start_row
+        value: "0"
+
   volumes:
   - name: shared-data
     hostPath:
@@ -20,15 +28,14 @@ spec:
       steps:
         - - name: data-fetch
             template: data-fetch
-            arguments:
-              parameters:
-                - name: n_rows
-                  value: "100"
+        - - name: preprocessing
+            template: preprocessing
 
     - name: data-fetch
-      inputs:
-        parameters:
-          - name: n_rows
+      # inputs:
+      #   parameters:
+      #     - name: n_rows
+      #     - name: start_row
       container:
         image: data-fetch:latest
         imagePullPolicy: Never
@@ -54,4 +61,30 @@ spec:
           - name: CSV_PATH
             value: /app/AutoInsuranceClaim.csv
           - name: N_ROWS
-            value: "{{inputs.parameters.n_rows}}"
+            value: "{{workflow.parameters.n_rows}}"
+          - name: START_ROW
+            value: "{{workflow.parameters.start_row}}"
+
+    - name: preprocessing
+      container:
+        image: preprocessing:latest
+        command: [python]
+        args: ["preprocessing.py"]
+        imagePullPolicy: Never
+        env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: my-database-cluster-app
+                key: username
+                optional: false
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: my-database-cluster-app
+                key: password
+                optional: false
+          - name: DB_HOST
+            value: my-database-cluster-rw
+          - name: DB_NAME
+            value: app
