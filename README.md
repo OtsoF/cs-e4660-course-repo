@@ -143,6 +143,11 @@ argo submit data-fetch-pipeline.yaml -p n_rows="50000" -p start_row="100000"
 argo cron create scheduler-cron.yaml
 <trigger scheduler from ui>
 
+kubectl get pod -o jsonpath='{.metadata.uid}'
+
+curl -X POST -H "Content-Type: application/json" \
+-d '{"row": [ 2, 5, 11, 10, 4 ]}' \
+http://localhost:30004/predict
 ```
 
 
