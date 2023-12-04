@@ -1,8 +1,10 @@
 # Scheduler
 
+The scheduler requires three fixed parameters. `LOW_ACCURACY_DECREASE`, `MAX_ACCURACY_DECREASE`, `CARBON_INTENSITY_THRESHOLD`. The scheduler makes determinations described in the root level README logic. On a high level, the scheduler has a simle if-then-else logic based on the fixed parameters.
+
 The scheduler checks the carbon intensity of the electric grid and the current model performance on new data. If the model performance is below a preset limit (`LOW_ACCURACY_DECREASE` env var), the scheduler will trigger the pipeline if the carbon intensity is low. If the model performance is below another preset limit (`MAX_ACCURACY_DECREASE` env var), the pipeline will be triggered immediately. The scheduler is run periodically with a CronWorkflow.
 
-The carbon intensity is fetched using the [Electricity Maps api](https://app.electricitymaps.com/). I'm using a personal account with a free tier subscription to the api. The authentication configuration to the api can be seen below.
+The carbon intensity is fetched using the [Electricity Maps api](https://app.electricitymaps.com/). I'm using a personal account with a free tier subscription to the api. The authentication configuration to the api can be seen below. The carbon intensity threshold is defined with the `CARBON_INTENSITY_THRESHOLD` env var.
 
 
 ## Configuration
@@ -28,7 +30,7 @@ EOF
 
 ```bash
 kubectl create secret generic electricity-maps-token \
---from-literal='token=wu5iP7DGWGwPpUYx8rTDuoZrOrsF61wR'
+--from-literal='token=<token-here>'
 ```
 
 ## Local testing

@@ -98,37 +98,34 @@ The functionality of the pipeline is documented in `./pipeline/argo.md`
 
 #### Pipeline scheduling
 
+Scheduling can help make the pipeline green in two ways:
+- scheduling frequency
+  - the real pipeline is currently run weekly, but by assessing model performance on incoming training data (or potentially by getting feedback on predictions) we can make determinations on when to re-train the model(s)
+- scheduling timing
+  - the *carbon intensity* of the electric grid changes based on certain factors (see [Planning document](./project-plan/plan.md) for more details)
+  - the mock pipeline is run in a local kubernetes cluster, but we pretend it's running in a specific Azure datacenter (west europe) and use APIs to see when the datacenter has low carbon intensity
+
 ##### Carbon intensity of german electric grid  
 ![Alt text](emissions-day.png)
 ![Alt text](emissions-month.png)
 ![Alt text](emissions-year.png)\
 Source: https://app.electricitymaps.com/zone/DE
 
+We can see a clear year-over-year trend in the carbon intensity (summers have lower carbon intensity). However, day-to-day and hourly carbon intensity does not have clear trends. This makes determining when to run beforehand difficult. The only solution left, and selected, is scheduling.
 
-We can see a clear year-over-year trend in the carbon intensity (summers have lower carbon intensity). However, day-to-day and hourly carbon intensity does not have clear trends. This makes determining when to run beforehand difficult.
-
-Scheduling can help make the pipeline green in two ways:
-- scheduling frequency
-  - the real pipeline is currently run nightly, but by assessing model performance on incoming training data (or potentially by getting feedback on predictions) we can make determinations on when to re-train the model(s)
-- scheduling timing
-  - the *carbon intensity* of the electric grid changes based on certain factors (see [Planning document](./project-plan/plan.md) for more details)
-  - the mock pipeline is run in a local kubernetes cluster, but we pretend it's running in a specific Azure datacenter (west europe) and use APIs to see when the datacenter has low carbon intensity
-
-This table shows the plan to combine both scheduling factors into one solution:
+This table shows how both scheduling factors are merged into one solution:
 
 | Accuracy of model on new training data | Action  |
 |----------------------------------------|---------|
-| Small decrease compared to initial training accuracy (to be quantified) | Retrain model once carbon intensity drops below set threshold |
+| Small decrease compared to initial training accuracy  | Retrain model once carbon intensity drops below set threshold |
 | Big decrease ...                                                       | Retrain model immediately |
 
 
-
-
-For this, a scheduler was developed (in `./scheduler` folder). The scheduler is configured to run periodically (using an Argo CronWorkflow see `./pipeline/scheduler-cron.yaml`), and it checks the conditions defined above, and triggers re-training of the model and re-deployment of model-api.
+The developed scheduler is describe in more detail in the `./scheduler` folder. In short, the scheduler is configured to run periodically (using an Argo CronWorkflow see `./pipeline/scheduler-cron.yaml`), and it checks the conditions defined above, and triggers re-training of the model and re-deployment of model-api.
 
 #### Metrics collection
 
-The initial plan was to use Scaphandre (https://hubblo-org.github.io/scaphandre-documentation/index.html) to get energy consumption metrics from the pipeline. However, I had to switch from my old pc to a mac mid project, and Scaphandre did not support the M1 mac. For this reason an ordinary Prometheus stack was deployed and used for metrics collection. The implementation is described deeper in `./metrics`. 
+The initial plan was to use Scaphandre (https://hubblo-org.github.io/scaphandre-documentation/index.html) to get energy consumption metrics from the pipeline. However, I had to switch from my old pc to a mac mid project, and Scaphandre did not support the M1 mac. For this reason an ordinary Prometheus stack was deployed and used for metrics collection. The implementation is described deeper in `./metrics`. The goal was to be able to track the SCI metric. (image below from initial-plan document)
 
 ![(image missing)](./project-plan/sci.png)
 
@@ -140,7 +137,7 @@ The initial plan was to use Scaphandre (https://hubblo-org.github.io/scaphandre-
 argo submit full-pipeline.yaml -p n_rows="100000"
 argo submit data-fetch-pipeline.yaml -p n_rows="50000" -p start_row="100000"
 <trigger scheduler from ui>
-argo cron create scheduler-cron.yaml
+<change CI threshold>
 <trigger scheduler from ui>
 
 kubectl get pod -o jsonpath='{.metadata.uid}'
@@ -241,7 +238,7 @@ The results were plotted using `./metrics/metrics.ipynb`
 
 ![Alt text](metrics/output.png)
 
-We can see that the accuracy lower for the second scenario, since the model is re-trained only once. The difference in accuracy is less than a percentage. The CPU-seconds*CI is much lower for the second run, because the model is re-trained only once on a day when there is low carbon intensity.
+We can see that the accuracy lower for the second scenario, since the model is re-trained only once. The difference in accuracy is less than a percentage. The CPU-seconds*CI is much lower for the second run, because the model is re-trained only once on a day when there is low carbon intensity. These results obviously also show that for this mock dataset, which does not change drastically over time, the model training done once per week if there are only 20k new rows per week is overkill. The trivial solution would be to just train less frequently. However, the mock dataset is not the real dataset, and further, the scheduling based on the carbon intensity has a huge benefit on its own.
 
 To calculate the difference in carbon usage we'll to define kWh/cpu*s as x. Then we can calculate the how much more the first methods uses carbon (%-wise) than the second: (sum(1st_cpu\*s\*CI\*x)-sum(2nd_cpu\*s\*CI\*x))/(sum(2nd_cpu\*s\*CI\*x)). (done in `./metrics/metrics.ipynb`)
 
@@ -256,7 +253,21 @@ To calculate the difference in carbon usage we'll to define kWh/cpu*s as x. Then
 - The fake computation makes the results possibly unrealistic
 - The experimentation does not consider carbon usage of the scheduler, because it was too quick to run, and metrics weren't available. 
 - The scheduling of data import & preprocessing is not considered. This could be improved by triggering fetch & preprocessed only when there is a certain amount of new data available. This can be assessed based on model performance on average given a certain amount of new data.
-- The ElectricityMaps api has a paid subscription including endpoints for CI future estimation. This could be taken into account in the scheduler. Further, the scheduler could use a webhook style approach instead of the scheduler approach. 
+- There are several improvements that could be made to the scheduler:
+  - The ElectricityMaps api has a paid subscription including endpoints for future estimation of carbon intensity.
+  - The scheduler could use a webhook style approach instead of the scheduled runs approach.
+  - The fixed carbon intensity threshold and accuracy decrease thresholds could be made dynamic, or could be determined by a machine learning solution, for example, by looking at historical (and predicted) carbon intensity.
+  - The model accuracy is not the only metric that could be used to determine when to re-train. Other metrics to consider include precision, recall, f1-score, ROC and AUC.
 - Think about where to deploy the pipeline. See https://app.electricitymaps.com/ for carbon intensity comparisons between different countries.
-- Argo workflow metrics can be integrated into prometheus https://argoproj.github.io/argo-workflows/metrics/
+- Argo workflow metrics can be integrated into Prometheus https://argoproj.github.io/argo-workflows/metrics/
 - Train the existing model on new data only instead of training a new model on all (new&old) data. See `warm_state` param in: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
+
+
+
+### Takeaways
+
+The biggest takeaway from using Argo Workflows as a workflow engine and pipeline orchestration solution is that it is more than capable of creating these kinds of 'simple' e2e ML pipelines. Further, coming from a DevOps background, the configuration via Kubernetes manifests is very approachable. Being able to use native Kubernetes solutions like PVs, Secrets and Configuration Maps in pipelines is a huge benefit. The pipeline solution solves R3E challenges like robustness and reliability through tools like configurable retry logic, while sensibly leaving challenges like elasticity and scalability to the underlying Kubernetes cluster.
+
+The biggest takeaway in terms of environmental impact is that scheduling based on carbon intensity really does have a large impact. Carbon intensity in Germany during this project varied between over 700 gCO2/kWh and below 200 gCO2/kWh. Moreover, the location of the computation has likely the largest impact. Germany (where the current AKS resides) has a very high carbon footprint compared to most European countries. See the image below. This means that choosing, *where* to schedule is even more important than choosing *when* to schedule.
+
+![Alt text](carbon-intensity-europe.png)

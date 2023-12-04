@@ -148,8 +148,7 @@ def main():
     full_pipeline = yaml.safe_load(file)
 
   if check_if_pipeline_should_run():
-    #trigger_pipeline(host, token, full_pipeline)
-    print("Pipeline triggered")
+    trigger_pipeline(host, token, full_pipeline)
 
 if __name__ == '__main__':
   main()
