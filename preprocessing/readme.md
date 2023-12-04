@@ -1,6 +1,6 @@
 # Data Preprocessing
 
-The mock data preprocessor simply takes the data in the postgres database, ~~encodes it using an ordinal encoder~~ selects a subset of columns and drops rows with missing values and imports it back into the database into a new table.
+The mock data preprocessor simply takes the data in the postgres database, ~~encodes it using an ordinal encoder~~ selects a subset of columns and drops rows with missing values and imports it back into the database into a new table. The last processed id is stored in the database, so when the preprocessing is run the next time, it won't re-process already preprocessed rows.
 
 ## Local testing
 

@@ -2,7 +2,13 @@
 
 ## Pipelines
 
-There are three Workflows, one for the full pipeline, one for just fetching and preprocessing, and one for model training and deploying the model-api. Additionally, there is a CronWorkflow for the scheduler.
+There are three Workflows:
+
+1. `full-pipeline.yaml` for the full e2e pipeline from fetching data to deploying the model-api
+2. `data-fetch-pipeline.yaml` for just fetching and preprocessing
+3. `train-and-deploy-pipeline.yaml` for model training and deploying the model-api. 
+
+Additionally, there is a CronWorkflow `scheduler-cron.yaml` for the scheduler, which triggers `train-and-deploy-pipeline.yaml` when the scheduling conditions are met. (see root README or `../scheduler` for more details.)
 
 ## Running pipelines
 

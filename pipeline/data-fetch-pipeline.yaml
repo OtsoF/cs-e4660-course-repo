@@ -32,10 +32,6 @@ spec:
             template: preprocessing
 
     - name: data-fetch
-      # inputs:
-      #   parameters:
-      #     - name: n_rows
-      #     - name: start_row
       container:
         image: data-fetch:latest
         imagePullPolicy: Never

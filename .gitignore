@@ -1,9 +1,9 @@
+.DS_store
+
 .venv
 .vscode
 data-fetch/AutoInsuranceClaim.csv
 model-training/data/
-
-model-api/config.yaml
 
 testing/*
 !testing/*.ipynb

@@ -10,6 +10,7 @@ from sklearn.metrics import accuracy_score
 
 def meaningless_computation(n):
   comp_time = n / 1000
+  print(f"Doing meaningless computation for {comp_time} seconds")
   start_time = time.time()
   while time.time() - start_time < comp_time:
     matrix_size = 50

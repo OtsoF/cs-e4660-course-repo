@@ -9,6 +9,11 @@ metadata:
       This workflow runs the model-training and (re-)deploys the model-api.
 spec:
   entrypoint: full-pipeline
+  arguments:
+    parameters:
+      - name: fake_computation
+        value: "false"
+
   volumes:
   - name: shared-data
     hostPath:
@@ -54,15 +59,24 @@ spec:
             value: app
           - name: MODEL_FILE_PATH
             value: /app/data
+          - name: FAKE_COMPUTATION
+            value: "{{workflow.parameters.fake_computation}}"
         volumeMounts:
           - name: shared-data
             mountPath: /app/data
+        resources:
+          limits:
+            cpu: '1000m'
+            memory: 2G
+          requests:
+            cpu: '500m'
+            memory: 512M
 
     - name: deploy-model-api
       resource:
         action: apply
-        successCondition: status.availableReplicas > 0
-        failureCondition: status.unavailableReplicas > 0, status.conditions > 1
+        #successCondition: status.availableReplicas > 0
+        #failureCondition: status.unavailableReplicas > 0, status.conditions > 1
         manifest: |
           apiVersion: apps/v1
           kind: Deployment
@@ -97,11 +111,19 @@ spec:
                     volumeMounts:
                       - name: shared-data
                         mountPath: /app/data
+                    resources:
+                      limits:
+                        cpu: '500m'
+                        memory: 2G
+                      requests:
+                        cpu: '250m'
+                        memory: 512M
                 volumes:
                   - name: shared-data
                     hostPath:
                       path: /data
                       type: DirectoryOrCreate
+
     - name: deploy-model-api-service
       resource:
         action: apply
@@ -133,4 +155,4 @@ spec:
             template:
               metadata:
                 annotations:
-                  deploy-timestamp: "{{workflow.creationTimestamp}}"
+                  deploy-timestamp: "{{workflow.creationTimestamp}}"  

@@ -9,6 +9,15 @@ metadata:
       This workflow runs the whole e2e pipeline.
 spec:
   entrypoint: full-pipeline
+  arguments:
+    parameters:
+      - name: n_rows
+        value: "100"
+      - name: start_row
+        value: "0"
+      - name: fake_computation
+        value: "false"
+
   volumes:
   - name: shared-data
     hostPath:
@@ -18,25 +27,20 @@ spec:
   templates:
     - name: full-pipeline
       steps:
-        # - - name: data-fetch
-        #     template: data-fetch
-        #     arguments:
-        #       parameters:
-        #         - name: n_rows
-        #           value: "100"
-        # - - name: preprocessing
-        #     template: preprocessing
-        # - - name: model-training
-        #     template: model-training
-          - - name: deploy-model-api
-              template: deploy-model-api
-            - name: deploy-model-api-service
-              template: deploy-model-api-service
+        - - name: data-fetch
+            template: data-fetch
+        - - name: preprocessing
+            template: preprocessing
+        - - name: model-training
+            template: model-training
+        - - name: deploy-model-api
+            template: deploy-model-api
+          - name: deploy-model-api-service
+            template: deploy-model-api-service
+        - - name: update-model-api
+            template: update-model-api
 
     - name: data-fetch
-      inputs:
-        parameters:
-          - name: n_rows
       container:
         image: data-fetch:latest
         imagePullPolicy: Never
@@ -62,7 +66,9 @@ spec:
           - name: CSV_PATH
             value: /app/AutoInsuranceClaim.csv
           - name: N_ROWS
-            value: "{{inputs.parameters.n_rows}}"
+            value: "{{workflow.parameters.n_rows}}"
+          - name: START_ROW
+            value: "{{workflow.parameters.start_row}}"
 
     - name: preprocessing
       container:
@@ -114,9 +120,18 @@ spec:
             value: app
           - name: MODEL_FILE_PATH
             value: /app/data
+          - name: FAKE_COMPUTATION
+            value: "{{workflow.parameters.fake_computation}}"
         volumeMounts:
           - name: shared-data
             mountPath: /app/data
+        resources:
+          limits:
+            cpu: '1000m'
+            memory: 2G
+          requests:
+            cpu: '500m'
+            memory: 512M
 
     - name: deploy-model-api
       resource:
@@ -157,11 +172,19 @@ spec:
                     volumeMounts:
                       - name: shared-data
                         mountPath: /app/data
+                    resources:
+                      limits:
+                        cpu: '500m'
+                        memory: 2G
+                      requests:
+                        cpu: '250m'
+                        memory: 512M
                 volumes:
                   - name: shared-data
                     hostPath:
                       path: /data
                       type: DirectoryOrCreate
+
     - name: deploy-model-api-service
       resource:
         action: apply
@@ -180,3 +203,17 @@ spec:
                 nodePort: 30004
             selector:
               app: model-api
+
+    - name: update-model-api
+      resource:
+        action: patch
+        manifest: |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: model-api
+          spec:
+            template:
+              metadata:
+                annotations:
+                  deploy-timestamp: "{{workflow.creationTimestamp}}"

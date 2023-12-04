@@ -1,6 +1,6 @@
 # Model training
 
-Here, a randomforest classifier is trainer with default hyperparameters. The resulting model is stored on a kubernetes node filesystem volume, which acts as a mock blob storage. 
+Here, a randomforest classifier is trainer with default hyperparameters. The resulting model is stored on a kubernetes node filesystem volume, which acts as a mock blob storage. The accuracy and last id used in training are stored in the database. These are used by scheduler, to determine what new data the existing model hasn't been trained on and the accuracy of the existing model is on the data it was trained on.
 
 ## Local testing
 

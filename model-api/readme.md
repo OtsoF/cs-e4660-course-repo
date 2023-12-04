@@ -8,14 +8,10 @@ The model api simply gets the latest model from the mock blob storage (node file
 #start api
 API_HOST="localhost" API_PORT="5000" MODEL_PATH="../model-training/data/" python model-api.py
 
-# test api (acc)
-curl -X POST -H "Content-Type: application/json" \
--d '{"row": [ 0, 1, 2, 0, 0, 0, 8, 7, 1, 0, 11 ]}' \
-http://localhost:5000/predict
 
-# test api (unacc)
+# test api 
 curl -X POST -H "Content-Type: application/json" \
--d '{"row": [ "vhigh","vhigh", 2, 2, "small", "low" ]}' \
+-d '{"row": [ 2, 5, 11, 10, 4 ]}' \
 http://localhost:5000/predict
 ```
 
@@ -30,14 +26,9 @@ http://localhost:5000/predict
 
 ## Getting predictions
 
-```
-# test api (acc)
+```bash
+# test api 
 curl -X POST -H "Content-Type: application/json" \
--d '{"row": [ "high" ,"med", "5more", 4, "big" ,"med" ]}' \
-http://localhost:5000/predict
-
-# test api (unacc)
-curl -X POST -H "Content-Type: application/json" \
--d '{"row": [ 0, 1, 2, 0, 0, 0, 8, 7, 1, 0, 11 ]}' \
+-d '{"row": [ 2, 5, 11, 10, 4 ]}' \
 http://localhost:30004/predict
 ```

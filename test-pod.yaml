@@ -16,5 +16,5 @@ spec:
   volumes:
     - name: shared-data
       hostPath:
-        path: /data
+        path: /
         type: DirectoryOrCreate

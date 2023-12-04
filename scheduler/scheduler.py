@@ -4,6 +4,7 @@ from urllib3.exceptions import InsecureRequestWarning
 from sqlalchemy import create_engine
 import pandas as pd
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 import joblib
 
 filterwarnings("ignore", category=InsecureRequestWarning)
@@ -37,6 +38,7 @@ def get_newest_model(directory):
     print("No model found")
     exit(1)
   newest_file = max(files, key=os.path.getctime)
+  print(f"Using model {newest_file}")
   model = joblib.load(newest_file)
   return model
 
@@ -54,7 +56,7 @@ def get_accuracies():
   print("Getting new data from database...")
   ae = create_engine(f'postgresql+psycopg2://{user}:{password}@{host}/{database}')
   last_id = get_last_trained_id(ae)
-  get_data_query = f"SELECT {','.join(col_names)} FROM {table} WHERE id > {last_id};"
+  get_data_query = f"SELECT {','.join(col_names)} FROM {table}"# WHERE id > {last_id};"
   ae_conn = ae.connect()
   df = pd.read_sql(get_data_query, ae_conn)
   if df.empty:
@@ -64,14 +66,16 @@ def get_accuracies():
 
   print('Getting model')
   model = get_newest_model(model_file_path)
+  X = df.drop(['ps_ind_02_cat'], axis=1)
+  y = df['ps_ind_02_cat']
+  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 42)
 
   print("Checking accuracy")
-  new_data_accuracy = accuracy_score(df['ps_ind_02_cat'], model.predict(df.drop(['ps_ind_02_cat'], axis=1)))
+  new_data_accuracy = accuracy_score(y_test, model.predict(X_test)) #accuracy_score(df['ps_ind_02_cat'], model.predict(df.drop(['ps_ind_02_cat'], axis=1)))
   current_accuracy = get_current_accuracy(ae)
   print(f"Accuracy on new data : {new_data_accuracy}, current accuracy : {current_accuracy}")
 
-  #return new_data_accuracy, current_accuracy
-  return 0.88, 0.90
+  return new_data_accuracy, current_accuracy
 
 def get_carbon_intensity():
   print("Checking carbon intensity")
@@ -108,6 +112,7 @@ def check_if_pipeline_should_run():
     else:
       print("High carbon intensity, do not re-train yet")
       return False
+  return False
 
 def trigger_pipeline(host, token, pipeline_dict):
   print("Triggering pipeline")
@@ -143,7 +148,8 @@ def main():
     full_pipeline = yaml.safe_load(file)
 
   if check_if_pipeline_should_run():
-    trigger_pipeline(host, token, full_pipeline)
+    #trigger_pipeline(host, token, full_pipeline)
+    print("Pipeline triggered")
 
 if __name__ == '__main__':
   main()

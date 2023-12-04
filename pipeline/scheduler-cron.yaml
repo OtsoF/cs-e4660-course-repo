@@ -3,7 +3,7 @@ kind: CronWorkflow
 metadata:
   name: scheduler-cron
 spec:
-  schedule: "*/5 * * * *" # every 5 minutes
+  schedule: "*/15 * * * *" # every 15 minutes
   concurrencyPolicy: "Forbid"
   startingDeadlineSeconds: 0
 
@@ -16,7 +16,7 @@ spec:
         type: DirectoryOrCreate
     - name: pipelines
       configMap:
-        name: pipelines-conf-47b2m7kc6t
+        name: pipelines-conf-7tmkmmh786
     
     templates:
       - name: full-pipeline
@@ -70,7 +70,7 @@ spec:
             - name: LOW_ACCURACY_DECREASE
               value: "0.0"
             - name: CARBON_INTENSITY_THRESHOLD
-              value: "600"
+              value: "400"
           volumeMounts:
             - name: shared-data
               mountPath: /app/data
